@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7B2D3B"/>
+      <stop offset="100%" stop-color="#3A2E2E"/>
+    </linearGradient>
+    <pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="1.2" fill="#ffffff" opacity="0.25"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="1000" fill="url(#g)"/>
+  <rect width="800" height="1000" fill="url(#p)"/>
+  <rect x="40" y="40" width="720" height="920" fill="none" stroke="#ffffff" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="400" y="470" font-family="Georgia, serif" font-size="46" fill="#ffffff" text-anchor="middle" font-style="italic">Design 01</text>
+  <text x="400" y="520" font-family="Helvetica, Arial, sans-serif" font-size="18" letter-spacing="4" fill="#ffffff" fill-opacity="0.85" text-anchor="middle">PLACEHOLDER</text>
+</svg>
