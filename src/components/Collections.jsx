@@ -1,5 +1,6 @@
 import { COLLECTIONS, waLink } from "../data";
 import Reveal from "./Reveal";
+import CollectionSlideshow from "./CollectionSlideshow";
 
 export default function Collections() {
   return (
@@ -28,13 +29,14 @@ export default function Collections() {
                 id={c.id}
                 className="group scroll-mt-nav bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 h-full flex flex-col"
               >
-                <div className="overflow-hidden aspect-[4/5]">
-                  <img
-                    src={c.image}
-                    alt={`${c.name} placeholder image`}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                <div className="overflow-hidden aspect-[4/5] relative">
+                  <div className="w-full h-full group-hover:scale-105 transition-transform duration-500">
+                    <CollectionSlideshow
+                      collectionSlug={c.id}
+                      fallbackSrc={c.image}
+                      alt={`${c.name} placeholder image`}
+                    />
+                  </div>
                 </div>
                 <div className="p-6 flex flex-col flex-1">
                   <h3 className="font-serif text-2xl text-burgundy font-semibold mb-2">
