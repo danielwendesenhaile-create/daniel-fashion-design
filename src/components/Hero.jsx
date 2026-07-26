@@ -1,6 +1,6 @@
 import { Star } from "lucide-react";
 import { motion } from "framer-motion";
-import { waLink } from "../data";
+import { waLink, asset } from "../data";
 
 export default function Hero() {
   return (
@@ -11,7 +11,7 @@ export default function Hero() {
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <img
-          src="/images/hero-bg.svg"
+          src={asset("/images/hero-bg.svg")}
           alt=""
           className="w-full h-full object-cover"
           loading="eager"

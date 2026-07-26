@@ -1,3 +1,5 @@
+export const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+
 export const PHONE_DISPLAY = "054 284 1512";
 export const PHONE_INTL = "+971542841512";
 export const WHATSAPP_NUMBER = "971542841512";
@@ -34,47 +36,47 @@ export const COLLECTIONS = [
     name: "Abayas",
     description:
       "Everyday luxury and hand-embellished abayas, tailored to flatter and made to move with you.",
-    image: "/images/collection-abayas.svg",
+    image: asset("/images/collection-abayas.svg"),
   },
   {
     id: "arabic-dresses",
     name: "Arabic Dresses",
     description:
       "Traditional and modern Arabic occasion dresses, crafted with rich fabrics and intricate detail.",
-    image: "/images/collection-arabic.svg",
+    image: asset("/images/collection-arabic.svg"),
   },
   {
     id: "habesha-dresses",
     name: "Habesha Dresses",
     description:
       "Traditional Ethiopian and Eritrean formal wear, handwoven patterns reimagined for modern celebrations.",
-    image: "/images/collection-habesha.svg",
+    image: asset("/images/collection-habesha.svg"),
   },
   {
     id: "wedding-dresses",
     name: "Wedding Dresses",
     description:
       "Bespoke bridal gowns designed around your story — from first sketch to final fitting.",
-    image: "/images/collection-wedding.svg",
+    image: asset("/images/collection-wedding.svg"),
   },
   {
     id: "occasion-outfits",
     name: "Occasion Outfits",
     description:
       "Engagement, holidays, programs and special events — statement pieces for every milestone.",
-    image: "/images/collection-occasion.svg",
+    image: asset("/images/collection-occasion.svg"),
   },
 ];
 
 export const GALLERY_IMAGES = [
-  { src: "/images/gallery-1.svg", alt: "Custom abaya design placeholder" },
-  { src: "/images/gallery-2.svg", alt: "Arabic occasion dress placeholder" },
-  { src: "/images/gallery-3.svg", alt: "Habesha dress placeholder" },
-  { src: "/images/gallery-4.svg", alt: "Wedding gown placeholder" },
-  { src: "/images/gallery-5.svg", alt: "Occasion outfit placeholder" },
-  { src: "/images/gallery-6.svg", alt: "Bridal detail placeholder" },
-  { src: "/images/gallery-7.svg", alt: "Embellished abaya placeholder" },
-  { src: "/images/gallery-8.svg", alt: "Evening gown placeholder" },
+  { src: asset("/images/gallery-1.svg"), alt: "Custom abaya design placeholder" },
+  { src: asset("/images/gallery-2.svg"), alt: "Arabic occasion dress placeholder" },
+  { src: asset("/images/gallery-3.svg"), alt: "Habesha dress placeholder" },
+  { src: asset("/images/gallery-4.svg"), alt: "Wedding gown placeholder" },
+  { src: asset("/images/gallery-5.svg"), alt: "Occasion outfit placeholder" },
+  { src: asset("/images/gallery-6.svg"), alt: "Bridal detail placeholder" },
+  { src: asset("/images/gallery-7.svg"), alt: "Embellished abaya placeholder" },
+  { src: asset("/images/gallery-8.svg"), alt: "Evening gown placeholder" },
 ];
 
 export const REVIEWS = [
