@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Expand } from "lucide-react";
 import { supabase, resolveImageUrl } from "../lib/supabase";
@@ -42,17 +42,19 @@ export default function CollectionSlideshow({ collectionSlug, collectionName, fa
   const lightboxSlides = slides || [{ id: "fallback", src: fallbackSrc, alt }];
 
   useEffect(() => {
-    if (!slides || slides.length < 2) return;
+    if (!slides || slides.length < 2 || lightboxOpen) return;
     const timer = setInterval(() => {
       setIndex((i) => (i + 1) % slides.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [slides]);
+  }, [slides, lightboxOpen]);
 
   const openLightbox = () => {
     setLightboxIndex(slides ? index : 0);
     setLightboxOpen(true);
   };
+
+  const closeLightbox = useCallback(() => setLightboxOpen(false), []);
 
   return (
     <>
@@ -124,7 +126,7 @@ export default function CollectionSlideshow({ collectionSlug, collectionName, fa
           index={lightboxIndex}
           setIndex={setLightboxIndex}
           collectionName={collectionName}
-          onClose={() => setLightboxOpen(false)}
+          onClose={closeLightbox}
         />
       )}
     </>

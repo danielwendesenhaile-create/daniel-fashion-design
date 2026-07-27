@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { waLink } from "../data";
@@ -28,7 +29,7 @@ export default function CollectionLightbox({
 
   const orderMessage = `Hello Daniel Fashion Design, I'd like to order this ${collectionName} design: ${current.src}`;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[60] bg-espresso/90 backdrop-blur-sm flex flex-col"
       onClick={onClose}
@@ -127,6 +128,7 @@ export default function CollectionLightbox({
           </a>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
