@@ -33,6 +33,7 @@ export default function Collections() {
                   <div className="w-full h-full group-hover:scale-105 transition-transform duration-500">
                     <CollectionSlideshow
                       collectionSlug={c.id}
+                      collectionName={c.name}
                       fallbackSrc={c.image}
                       alt={`${c.name} placeholder image`}
                     />
@@ -47,13 +48,13 @@ export default function Collections() {
                   </p>
                   <a
                     href={waLink(
-                      `Hello Daniel Fashion Design, I'd like to enquire about your ${c.name}`
+                      `Hello Daniel Fashion Design, I'd like to order from your ${c.name} collection`
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center bg-burgundy text-ivory px-5 py-2.5 rounded-full text-sm font-medium hover:bg-rosegold hover:text-espresso transition-colors duration-300"
                   >
-                    Enquire on WhatsApp
+                    Order on WhatsApp
                   </a>
                 </div>
               </div>
