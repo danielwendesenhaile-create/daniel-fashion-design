@@ -31,9 +31,9 @@ export default function About() {
       <div className="max-w-6xl mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-12 items-center">
         <Reveal>
           <img
-            src={asset("/images/about-image.svg")}
-            alt="Placeholder image of the Daniel Fashion Design atelier"
-            className="rounded-2xl shadow-xl w-full h-auto"
+            src={asset("/images/about-atelier.jpg")}
+            alt="Model wearing a Daniel Fashion Design gown in the atelier"
+            className="rounded-2xl shadow-xl w-full h-auto object-cover"
             loading="lazy"
           />
         </Reveal>
