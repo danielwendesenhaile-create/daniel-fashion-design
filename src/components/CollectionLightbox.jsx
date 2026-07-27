@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +11,9 @@ export default function CollectionLightbox({
   collectionName,
   onClose,
 }) {
+  const [photoBlob, setPhotoBlob] = useState(null);
+  const current = slides[index];
+
   useEffect(() => {
     document.body.style.overflow = "hidden";
     const onKey = (e) => {
@@ -25,9 +28,63 @@ export default function CollectionLightbox({
     };
   }, [onClose, setIndex, slides.length]);
 
-  const current = slides[index];
+  // Pre-fetch the current photo as a file so "Order" can share/attach the
+  // actual image instead of just a link, and so the share() call below stays
+  // inside the click's user-gesture window (no await before it).
+  useEffect(() => {
+    let cancelled = false;
+    setPhotoBlob(null);
+    fetch(current.src)
+      .then((r) => (r.ok ? r.blob() : null))
+      .then((blob) => {
+        if (!cancelled) setPhotoBlob(blob);
+      })
+      .catch(() => {
+        if (!cancelled) setPhotoBlob(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [current.src]);
 
-  const orderMessage = `Hello Daniel Fashion Design, I'd like to order this ${collectionName} design: ${current.src}`;
+  const filename = `${collectionName.replace(/[^a-zA-Z0-9]+/g, "-")}-${index + 1}.jpg`;
+  const caption = `Hello Daniel Fashion Design, I'd like to order this ${collectionName} design.`;
+
+  const handleOrder = async () => {
+    if (photoBlob) {
+      try {
+        const file = new File([photoBlob], filename, {
+          type: photoBlob.type || "image/jpeg",
+        });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: caption });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === "AbortError") return; // user cancelled the share sheet
+      }
+
+      // Fallback: download the actual photo, then open WhatsApp so it can be attached there.
+      const blobUrl = URL.createObjectURL(photoBlob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+      window.open(
+        waLink(`${caption} I'm attaching the exact photo.`),
+        "_blank",
+        "noopener,noreferrer"
+      );
+      return;
+    }
+
+    // Last resort (e.g. an external photo URL the browser can't fetch): at
+    // least point to the exact photo so it can still be identified.
+    window.open(waLink(`${caption} ${current.src}`), "_blank", "noopener,noreferrer");
+  };
 
   return createPortal(
     <div
@@ -118,14 +175,13 @@ export default function CollectionLightbox({
             {collectionName}
             {slides.length > 1 ? ` — photo ${index + 1} of ${slides.length}` : ""}
           </p>
-          <a
-            href={waLink(orderMessage)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={handleOrder}
             className="inline-flex items-center justify-center bg-burgundy text-ivory px-6 py-2.5 rounded-full text-sm font-medium hover:bg-rosegold hover:text-espresso transition-colors duration-300"
           >
             Order on WhatsApp
-          </a>
+          </button>
         </div>
       </div>
     </div>,

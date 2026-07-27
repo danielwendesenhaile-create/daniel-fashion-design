@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Expand } from "lucide-react";
 import { supabase, resolveImageUrl } from "../lib/supabase";
 import CollectionLightbox from "./CollectionLightbox";
@@ -79,19 +78,16 @@ export default function CollectionSlideshow({ collectionSlug, collectionName, fa
             className="w-full h-full object-cover"
           />
         ) : (
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={slides[index].id}
-              src={slides[index].src}
-              alt={slides[index].alt}
+          slides.map((slide, i) => (
+            <img
+              key={slide.id}
+              src={slide.src}
+              alt={slide.alt}
               loading="lazy"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6 }}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
+              style={{ opacity: i === index ? 1 : 0 }}
             />
-          </AnimatePresence>
+          ))
         )}
 
         <div className="absolute inset-0 bg-espresso/0 group-hover/photo:bg-espresso/30 transition-colors duration-300 flex items-center justify-center">
