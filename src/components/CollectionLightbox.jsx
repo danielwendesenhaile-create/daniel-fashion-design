@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,7 +11,6 @@ export default function CollectionLightbox({
   collectionName,
   onClose,
 }) {
-  const [photoBlob, setPhotoBlob] = useState(null);
   const current = slides[index];
 
   useEffect(() => {
@@ -28,66 +27,10 @@ export default function CollectionLightbox({
     };
   }, [onClose, setIndex, slides.length]);
 
-  // Pre-fetch the current photo as a file so "Order" can share/attach the
-  // actual image instead of just a link, and so the share() call below stays
-  // inside the click's user-gesture window (no await before it).
-  useEffect(() => {
-    let cancelled = false;
-    setPhotoBlob(null);
-    fetch(current.src)
-      .then((r) => (r.ok ? r.blob() : null))
-      .then((blob) => {
-        if (!cancelled) setPhotoBlob(blob);
-      })
-      .catch(() => {
-        if (!cancelled) setPhotoBlob(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [current.src]);
-
-  const filename = `${collectionName.replace(/[^a-zA-Z0-9]+/g, "-")}-${index + 1}.jpg`;
-  const caption = `Hello Daniel Fashion Design, I'd like to order this ${collectionName} design.`;
-
-  const handleOrder = () => {
-    // Always open WhatsApp immediately, in the same click gesture - the
-    // button must never leave the customer stranded (e.g. a share sheet
-    // that doesn't list WhatsApp, like on macOS, or the user backing out
-    // of it isn't "cancel the order", it just means that path didn't work).
-    const message = photoBlob
-      ? `${caption} I'm sending you the exact photo now.`
-      : `${caption} ${current.src}`;
-    window.open(waLink(message), "_blank", "noopener,noreferrer");
-
-    if (!photoBlob) return;
-
-    // Best-effort, alongside the WhatsApp tab: hand off the real photo file
-    // via the native share sheet, or fall back to downloading it so it can
-    // be attached manually.
-    (async () => {
-      try {
-        const file = new File([photoBlob], filename, {
-          type: photoBlob.type || "image/jpeg",
-        });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file] });
-          return;
-        }
-      } catch {
-        // Share unavailable or cancelled - fall through to a plain download.
-      }
-
-      const blobUrl = URL.createObjectURL(photoBlob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
-    })();
-  };
+  // Sending the direct photo URL lets WhatsApp generate its own inline image
+  // preview in the chat, so the recipient sees exactly which design this is
+  // before ever clicking the link.
+  const orderMessage = `Hello Daniel Fashion Design, I'd like to order this ${collectionName} design: ${current.src}`;
 
   return createPortal(
     <div
@@ -178,13 +121,14 @@ export default function CollectionLightbox({
             {collectionName}
             {slides.length > 1 ? ` — photo ${index + 1} of ${slides.length}` : ""}
           </p>
-          <button
-            type="button"
-            onClick={handleOrder}
+          <a
+            href={waLink(orderMessage)}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center bg-burgundy text-ivory px-6 py-2.5 rounded-full text-sm font-medium hover:bg-rosegold hover:text-espresso transition-colors duration-300"
           >
             Order on WhatsApp
-          </button>
+          </a>
         </div>
       </div>
     </div>,
