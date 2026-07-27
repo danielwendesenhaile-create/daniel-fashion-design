@@ -10,7 +10,7 @@ export default function Footer() {
             <img
               src={asset("/images/logo-full.png")}
               alt="Daniel Fashion Design"
-              className="h-20 w-20 rounded-xl shadow-md mb-4"
+              className="h-24 w-24 mb-4"
             />
             <p className="text-sm text-ivory/60 max-w-xs">
               Where your dream design becomes reality! Bespoke abayas, Arabic
