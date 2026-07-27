@@ -50,21 +50,34 @@ export default function CollectionLightbox({
   const filename = `${collectionName.replace(/[^a-zA-Z0-9]+/g, "-")}-${index + 1}.jpg`;
   const caption = `Hello Daniel Fashion Design, I'd like to order this ${collectionName} design.`;
 
-  const handleOrder = async () => {
-    if (photoBlob) {
+  const handleOrder = () => {
+    // Always open WhatsApp immediately, in the same click gesture - the
+    // button must never leave the customer stranded (e.g. a share sheet
+    // that doesn't list WhatsApp, like on macOS, or the user backing out
+    // of it isn't "cancel the order", it just means that path didn't work).
+    const message = photoBlob
+      ? `${caption} I'm sending you the exact photo now.`
+      : `${caption} ${current.src}`;
+    window.open(waLink(message), "_blank", "noopener,noreferrer");
+
+    if (!photoBlob) return;
+
+    // Best-effort, alongside the WhatsApp tab: hand off the real photo file
+    // via the native share sheet, or fall back to downloading it so it can
+    // be attached manually.
+    (async () => {
       try {
         const file = new File([photoBlob], filename, {
           type: photoBlob.type || "image/jpeg",
         });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], text: caption });
+          await navigator.share({ files: [file] });
           return;
         }
-      } catch (err) {
-        if (err && err.name === "AbortError") return; // user cancelled the share sheet
+      } catch {
+        // Share unavailable or cancelled - fall through to a plain download.
       }
 
-      // Fallback: download the actual photo, then open WhatsApp so it can be attached there.
       const blobUrl = URL.createObjectURL(photoBlob);
       const a = document.createElement("a");
       a.href = blobUrl;
@@ -73,17 +86,7 @@ export default function CollectionLightbox({
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
-      window.open(
-        waLink(`${caption} I'm attaching the exact photo.`),
-        "_blank",
-        "noopener,noreferrer"
-      );
-      return;
-    }
-
-    // Last resort (e.g. an external photo URL the browser can't fetch): at
-    // least point to the exact photo so it can still be identified.
-    window.open(waLink(`${caption} ${current.src}`), "_blank", "noopener,noreferrer");
+    })();
   };
 
   return createPortal(
