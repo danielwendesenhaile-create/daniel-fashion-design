@@ -1,8 +1,40 @@
+import { useEffect, useState } from "react";
 import { FaTiktok } from "react-icons/fa";
 import { GALLERY_IMAGES, TIKTOK_URL, TIKTOK_HANDLE } from "../data";
+import { supabase, resolveImageUrl } from "../lib/supabase";
 import Reveal from "./Reveal";
 
 export default function Gallery() {
+  const [images, setImages] = useState(null); // null = loading
+
+  useEffect(() => {
+    let cancelled = false;
+
+    supabase
+      .from("gallery_images")
+      .select("id, storage_path, alt_text")
+      .order("position", { ascending: true })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || !data || data.length === 0) {
+          setImages(GALLERY_IMAGES);
+          return;
+        }
+        setImages(
+          data.map((row) => ({
+            src: resolveImageUrl(row.storage_path),
+            alt: row.alt_text || "Daniel Fashion Design gallery photo",
+          }))
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const gallery = images || GALLERY_IMAGES;
+
   return (
     <section id="gallery" className="py-20 md:py-28 scroll-mt-nav">
       <div className="max-w-6xl mx-auto px-5 md:px-8">
@@ -20,7 +52,7 @@ export default function Gallery() {
         </Reveal>
 
         <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
-          {GALLERY_IMAGES.map((img, i) => (
+          {gallery.map((img, i) => (
             <Reveal key={img.src} delay={(i % 4) * 0.06} className="mb-4 break-inside-avoid">
               <img
                 src={img.src}

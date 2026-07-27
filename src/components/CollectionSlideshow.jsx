@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { supabase, collectionImagePublicUrl } from "../lib/supabase";
+import { supabase, resolveImageUrl } from "../lib/supabase";
 
 export default function CollectionSlideshow({ collectionSlug, fallbackSrc, alt }) {
   const [images, setImages] = useState(null); // null = loading
@@ -23,7 +23,7 @@ export default function CollectionSlideshow({ collectionSlug, fallbackSrc, alt }
         setImages(
           data.map((row) => ({
             id: row.id,
-            src: collectionImagePublicUrl(row.storage_path),
+            src: resolveImageUrl(row.storage_path),
             alt: row.alt_text || alt,
           }))
         );

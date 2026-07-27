@@ -1,24 +1,36 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronUp, ChevronDown, Trash2, Upload, LogOut } from "lucide-react";
-import { supabase, collectionImagePublicUrl, COLLECTION_IMAGES_BUCKET } from "../lib/supabase";
+import { ChevronUp, ChevronDown, Trash2, Upload, LogOut, Link2, Images } from "lucide-react";
+import { supabase, resolveImageUrl, IMAGES_BUCKET } from "../lib/supabase";
 import { COLLECTIONS } from "../data";
 
+const TABS = [
+  ...COLLECTIONS.map((c) => ({ id: c.id, name: c.name, table: "collection_images" })),
+  { id: "gallery", name: "Gallery", table: "gallery_images" },
+];
+
 export default function Dashboard({ session }) {
-  const [activeSlug, setActiveSlug] = useState(COLLECTIONS[0].id);
+  const [activeTabId, setActiveTabId] = useState(TABS[0].id);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [urlValue, setUrlValue] = useState("");
+  const [addingUrl, setAddingUrl] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
+
+  const activeTab = TABS.find((t) => t.id === activeTabId);
+  const isGallery = activeTab.table === "gallery_images";
 
   const loadImages = useCallback(async () => {
     setLoading(true);
     setError("");
-    const { data, error: fetchError } = await supabase
-      .from("collection_images")
+    let query = supabase
+      .from(activeTab.table)
       .select("id, storage_path, position, alt_text")
-      .eq("collection_slug", activeSlug)
       .order("position", { ascending: true });
+    if (!isGallery) query = query.eq("collection_slug", activeTab.id);
+
+    const { data, error: fetchError } = await query;
     if (fetchError) {
       setError(fetchError.message);
       setImages([]);
@@ -26,11 +38,14 @@ export default function Dashboard({ session }) {
       setImages(data);
     }
     setLoading(false);
-  }, [activeSlug]);
+  }, [activeTab.table, activeTab.id, isGallery]);
 
   useEffect(() => {
     loadImages();
   }, [loadImages]);
+
+  const nextPosition = () =>
+    images.length > 0 ? Math.max(...images.map((i) => i.position)) + 1 : 0;
 
   const handleUpload = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -38,15 +53,14 @@ export default function Dashboard({ session }) {
     setUploading(true);
     setError("");
 
-    let nextPosition =
-      images.length > 0 ? Math.max(...images.map((i) => i.position)) + 1 : 0;
+    let position = nextPosition();
 
     for (const file of files) {
       const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-      const path = `${activeSlug}/${Date.now()}-${safeName}`;
+      const path = `${activeTab.id}/${Date.now()}-${safeName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from(COLLECTION_IMAGES_BUCKET)
+        .from(IMAGES_BUCKET)
         .upload(path, file, { cacheControl: "3600", upsert: false });
 
       if (uploadError) {
@@ -54,14 +68,12 @@ export default function Dashboard({ session }) {
         continue;
       }
 
-      const { error: insertError } = await supabase.from("collection_images").insert({
-        collection_slug: activeSlug,
-        storage_path: path,
-        position: nextPosition,
-      });
+      const row = { storage_path: path, position };
+      if (!isGallery) row.collection_slug = activeTab.id;
 
+      const { error: insertError } = await supabase.from(activeTab.table).insert(row);
       if (insertError) setError(insertError.message);
-      nextPosition += 1;
+      position += 1;
     }
 
     setUploading(false);
@@ -69,10 +81,36 @@ export default function Dashboard({ session }) {
     loadImages();
   };
 
+  const handleAddUrl = async (e) => {
+    e.preventDefault();
+    const url = urlValue.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      setError("Please enter a valid image URL starting with http:// or https://");
+      return;
+    }
+
+    setAddingUrl(true);
+    setError("");
+
+    const row = { storage_path: url, position: nextPosition() };
+    if (!isGallery) row.collection_slug = activeTab.id;
+
+    const { error: insertError } = await supabase.from(activeTab.table).insert(row);
+    if (insertError) setError(insertError.message);
+
+    setAddingUrl(false);
+    setUrlValue("");
+    loadImages();
+  };
+
   const handleDelete = async (image) => {
     if (!confirm("Delete this photo? This cannot be undone.")) return;
-    await supabase.storage.from(COLLECTION_IMAGES_BUCKET).remove([image.storage_path]);
-    await supabase.from("collection_images").delete().eq("id", image.id);
+    // Only remove from storage if it's an uploaded file, not a pasted external URL.
+    if (!/^https?:\/\//i.test(image.storage_path)) {
+      await supabase.storage.from(IMAGES_BUCKET).remove([image.storage_path]);
+    }
+    await supabase.from(activeTab.table).delete().eq("id", image.id);
     loadImages();
   };
 
@@ -83,14 +121,8 @@ export default function Dashboard({ session }) {
     const target = images[targetIndex];
 
     await Promise.all([
-      supabase
-        .from("collection_images")
-        .update({ position: target.position })
-        .eq("id", current.id),
-      supabase
-        .from("collection_images")
-        .update({ position: current.position })
-        .eq("id", target.id),
+      supabase.from(activeTab.table).update({ position: target.position }).eq("id", current.id),
+      supabase.from(activeTab.table).update({ position: current.position }).eq("id", target.id),
     ]);
     loadImages();
   };
@@ -120,25 +152,26 @@ export default function Dashboard({ session }) {
 
       <main className="max-w-6xl mx-auto px-5 md:px-8 py-10">
         <div className="flex flex-wrap gap-2 mb-8">
-          {COLLECTIONS.map((c) => (
+          {TABS.map((t) => (
             <button
-              key={c.id}
-              onClick={() => setActiveSlug(c.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeSlug === c.id
+              key={t.id}
+              onClick={() => setActiveTabId(t.id)}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeTabId === t.id
                   ? "bg-burgundy text-ivory"
                   : "bg-white text-espresso/70 border border-rosegold/30 hover:border-burgundy"
               }`}
             >
-              {c.name}
+              {t.id === "gallery" && <Images size={14} />}
+              {t.name}
             </button>
           ))}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-rosegold/20 p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h2 className="font-serif text-lg text-burgundy font-semibold">
-              {COLLECTIONS.find((c) => c.id === activeSlug)?.name} photos
+              {activeTab.name} photos
             </h2>
             <label className="inline-flex items-center gap-2 bg-burgundy text-ivory px-4 py-2 rounded-full text-sm font-medium cursor-pointer hover:bg-rosegold hover:text-espresso transition-colors">
               <Upload size={16} />
@@ -155,6 +188,29 @@ export default function Dashboard({ session }) {
             </label>
           </div>
 
+          <form onSubmit={handleAddUrl} className="flex flex-col sm:flex-row gap-2 mb-6">
+            <div className="relative flex-1">
+              <Link2
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-espresso/40"
+              />
+              <input
+                type="url"
+                value={urlValue}
+                onChange={(e) => setUrlValue(e.target.value)}
+                placeholder="Or paste an image URL (e.g. from Pinterest)…"
+                className="w-full rounded-full border border-rosegold/30 pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rosegold"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={addingUrl || !urlValue.trim()}
+              className="inline-flex items-center justify-center gap-1.5 border border-burgundy text-burgundy px-5 py-2 rounded-full text-sm font-medium hover:bg-burgundy hover:text-ivory transition-colors disabled:opacity-40"
+            >
+              {addingUrl ? "Adding…" : "Add photo"}
+            </button>
+          </form>
+
           {error && (
             <p className="text-sm text-red-600 mb-4 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
               {error}
@@ -165,8 +221,9 @@ export default function Dashboard({ session }) {
             <p className="text-sm text-espresso/60">Loading…</p>
           ) : images.length === 0 ? (
             <p className="text-sm text-espresso/60">
-              No photos yet for this collection. Upload some to replace the
-              placeholder shown on the site.
+              No photos yet{isGallery ? "" : " for this collection"}. Upload
+              some or paste a URL above to replace the placeholders shown on
+              the site.
             </p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -176,7 +233,7 @@ export default function Dashboard({ session }) {
                   className="relative group rounded-xl overflow-hidden border border-rosegold/20 aspect-[4/5]"
                 >
                   <img
-                    src={collectionImagePublicUrl(image.storage_path)}
+                    src={resolveImageUrl(image.storage_path)}
                     alt={image.alt_text || ""}
                     className="w-full h-full object-cover"
                   />
