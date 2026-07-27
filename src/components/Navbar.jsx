@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { NAV_LINKS, waLink } from "../data";
+import { NAV_LINKS, waLink, asset } from "../data";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -26,11 +26,12 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-5 md:px-8 h-20">
-        <a
-          href="#home"
-          className="font-serif text-2xl md:text-3xl text-burgundy font-semibold tracking-wide"
-        >
-          Daniel Fashion Design
+        <a href="#home" className="flex items-center">
+          <img
+            src={asset("/images/logo-full.png")}
+            alt="Daniel Fashion Design"
+            className="h-14 md:h-16 w-auto"
+          />
         </a>
 
         <ul className="hidden lg:flex items-center gap-8 font-medium text-espresso">

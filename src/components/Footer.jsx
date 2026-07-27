@@ -1,5 +1,5 @@
 import { FaWhatsapp, FaTiktok } from "react-icons/fa";
-import { NAV_LINKS, TIKTOK_URL, waLink } from "../data";
+import { NAV_LINKS, TIKTOK_URL, waLink, asset } from "../data";
 
 export default function Footer() {
   return (
@@ -7,9 +7,11 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-5 md:px-8">
         <div className="grid sm:grid-cols-3 gap-10 mb-10">
           <div>
-            <p className="font-serif text-2xl text-rosegold font-semibold mb-3">
-              Daniel Fashion Design
-            </p>
+            <img
+              src={asset("/images/logo-full.png")}
+              alt="Daniel Fashion Design"
+              className="h-20 w-20 rounded-xl shadow-md mb-4"
+            />
             <p className="text-sm text-ivory/60 max-w-xs">
               Where your dream design becomes reality! Bespoke abayas, Arabic
               dresses, Habesha dresses, and occasion wear crafted in Sharjah.
