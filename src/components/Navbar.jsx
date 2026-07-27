@@ -26,12 +26,15 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-5 md:px-8 h-20">
-        <a href="#home" className="flex items-center">
+        <a href="#home" className="flex items-center gap-3">
           <img
             src={asset("/images/logo-full.png")}
             alt="Daniel Fashion Design"
             className="h-14 md:h-16 w-auto"
           />
+          <span className="font-serif text-xl md:text-2xl text-burgundy font-semibold tracking-wide leading-tight hidden sm:inline">
+            Daniel Fashion Design
+          </span>
         </a>
 
         <ul className="hidden lg:flex items-center gap-8 font-medium text-espresso">
