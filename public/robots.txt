@@ -1,0 +1,8 @@
+# TODO: update the Disallow path and Sitemap URL once the custom domain is
+# live (it'll be "/admin" instead of "/daniel-fashion-design/admin", and the
+# domain will change).
+User-agent: *
+Allow: /
+Disallow: /daniel-fashion-design/admin
+
+Sitemap: https://danielwendesenhaile-create.github.io/daniel-fashion-design/sitemap.xml
