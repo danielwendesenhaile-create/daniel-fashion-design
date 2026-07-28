@@ -7,11 +7,13 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-5 md:px-8">
         <div className="grid sm:grid-cols-3 gap-10 mb-10">
           <div>
-            <img
-              src={asset("/images/logo-full.png")}
-              alt="Daniel Fashion Design"
-              className="h-24 w-24 mb-4"
-            />
+            <div className="w-24 h-24 rounded-full bg-ivory/95 shadow-md flex items-center justify-center mb-4">
+              <img
+                src={asset("/images/logo-full.png")}
+                alt="Daniel Fashion Design"
+                className="h-20 w-20"
+              />
+            </div>
             <p className="text-sm text-ivory/60 max-w-xs">
               Where your dream design becomes reality! Bespoke abayas, Arabic
               dresses, Habesha dresses, and occasion wear crafted in Sharjah.
